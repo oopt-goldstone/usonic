@@ -1,6 +1,6 @@
 SAIREDIS_DIR := ../../sm/sonic-sairedis
 
-all: step1 step2
+all: step2
 
 # step1 builds meta library, redis SAI library and VS SAI library
 # change SONAME of VS SAI library so that it can be used as a normal SAI library
@@ -9,7 +9,7 @@ step1:
 	cp rules.1 $(SAIREDIS_DIR)/debian/rules
 	cd $(SAIREDIS_DIR) && dpkg-buildpackage -us -uc -b && cd ../ && dpkg -i *.deb && cp *.deb /tmp/
 	patchelf --set-soname libsai.so /usr/lib/x86_64-linux-gnu/libsaivs.so.0.0.0
-	cd /usr/lib/x86_64-linux-gnu/ && ln -s libsaivs.so libsai.so
+	cd /usr/lib/x86_64-linux-gnu/ && ls -lrt
 	-$(MAKE) -C $(SAIREDIS_DIR)/syncd clean # clean up syncd-vs build in step1 ( TODO: use dh_auto_clean? )
 
 # step2 builds the syncd package without VS option enabled
@@ -17,5 +17,5 @@ step1:
 step2:
 	cp control.2 $(SAIREDIS_DIR)/debian/control
 	cp rules.2 $(SAIREDIS_DIR)/debian/rules
-	cp syncd.install $(SAIREDIS_DIR)/debian/syncd.install
+#	cp syncd.install $(SAIREDIS_DIR)/debian/syncd.install
 	cd $(SAIREDIS_DIR) && dpkg-buildpackage -us -uc -b && cd ../ && dpkg -i *.deb && cp *.deb /tmp/

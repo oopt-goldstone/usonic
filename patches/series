@@ -1,2 +1,0 @@
-sonic-swss/swssconfig:_use_unix_domain_socket.patch
-sonic-swss/[portsyncd]:_fix_portsyncd_restart_case_(#1019).patch

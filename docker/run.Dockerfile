@@ -16,13 +16,12 @@ FROM ${USONIC_LLDPD_IMAGE} as lldpd
 FROM debian:buster
 
 RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt \
-apt update && apt install -qy --no-install-recommends libnl-3-200 libnl-genl-3-200 libnl-route-3-200 libnl-nf-3-200 libhiredis0.14 socat iproute2 libteam5 libdaemon-dev libdbus-1-dev libjansson-dev libnl-3-dev libnl-cli-3-dev libnl-genl-3-dev libnl-route-3-dev pkg-config debhelper libdbus-1-3 libdaemon0 libjansson4 libc-ares2 iproute2 libpython2.7 libjson-c3 logrotate libunwind8 libjs-jquery libjs-underscore libsnmp30 libyang0.16 libbsd-dev check libsnmp-dev libpci-dev libxml2-dev libevent-dev libreadline-dev libcap-dev
+apt update && apt install -qy --no-install-recommends  libhiredis0.14 socat iproute2 libteam5 libdaemon-dev libdbus-1-dev libjansson-dev  pkg-config debhelper libdbus-1-3 libdaemon0 libjansson4 libc-ares2 iproute2 libpython2.7 libjson-c3 logrotate libunwind8 libjs-jquery libjs-underscore libsnmp30 libyang0.16 libbsd-dev check libsnmp-dev libpci-dev libxml2-dev libevent-dev libreadline-dev libcap-dev libyaml-0-2 libzmq5 libteamdctl0 lsof libelf-dev libpcre2-dev kmod
 
 RUN --mount=type=bind,from=swss_common,source=/tmp,target=/tmp ls /tmp/*.deb | awk '$0 !~ /python/ && $0 !~ /-dbg_/ && $0 !~ /-dev_/ { print $0 }' | xargs dpkg -i
 
 RUN --mount=type=bind,from=sairedis,source=/tmp,target=/tmp ls /tmp/*.deb | awk '$0 !~ /python/ && $0 !~ /-dbg_/ && $0 !~ /-dev_/ { print $0 }' | xargs dpkg -i
-RUN --mount=type=bind,from=sairedis,target=/tmp cp /tmp/usr/lib/x86_64-linux-gnu/libsaivs.so.0.0.0 /usr/lib/x86_64-linux-gnu/libsaivs.so.0.0.0
-RUN cd /usr/lib/x86_64-linux-gnu/ && ln -s libsaivs.so libsai.so
+RUN --mount=type=bind,from=sairedis,target=/tmp cp /tmp/usr/lib/libsai.so /usr/lib/x86_64-linux-gnu/libsai.so
 
 RUN --mount=type=bind,from=swss,source=/tmp,target=/tmp ls /tmp/*.deb | awk '$0 !~ /python/ && $0 !~ /-dbg_/ && $0 !~ /-dev_/ { print $0 }' | xargs dpkg -i
 
