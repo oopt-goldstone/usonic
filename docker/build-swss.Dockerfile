@@ -20,7 +20,7 @@ RUN --mount=type=bind,source=/tmp,target=/tmp,from=swss_common dpkg -i /tmp/*.de
 RUN --mount=type=bind,source=/tmp,target=/tmp,from=sairedis dpkg -i /tmp/*.deb
 RUN --mount=type=bind,source=/tmp,target=/tmp,from=libteam dpkg -i /tmp/*.deb
 
-#RUN --mount=type=bind,source=sm/sonic-swss,target=/root/sm/sonic-swss,rw \
-#    --mount=type=tmpfs,target=/root/.pc,rw \
-#    --mount=type=bind,source=make/swss,target=/root/make/swss\
-#    make -C /root/make/swss
+RUN --mount=type=bind,source=sm/sonic-swss,target=/root/sm/sonic-swss,rw \
+    --mount=type=tmpfs,target=/root/.pc,rw \
+    --mount=type=bind,source=make/swss,target=/root/make/swss\
+    make -C /root/make/swss
