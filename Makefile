@@ -68,19 +68,19 @@ swss-common:
 
 sonic-frr:
 	DOCKER_BUILDKIT=1 docker build $(DOCKER_BUILD_OPTION) -f docker/build-sonic-frr.Dockerfile \
-							      --no-cache --progress=plain -t $(DOCKER_REPO)/$(USONIC_SONIC_FRR_IMAGE):$(USONIC_IMAGE_TAG) .
+							       --progress=plain -t $(DOCKER_REPO)/$(USONIC_SONIC_FRR_IMAGE):$(USONIC_IMAGE_TAG) .
 
 sairedis:
 	DOCKER_BUILDKIT=1 docker build $(DOCKER_BUILD_OPTION) --build-arg USONIC_SWSS_COMMON_IMAGE=$(DOCKER_REPO)/$(USONIC_SWSS_COMMON_IMAGE):$(USONIC_IMAGE_TAG) \
 							      -f docker/build-sairedis.Dockerfile \
-							      --no-cache --progress=plain -t $(DOCKER_REPO)/$(USONIC_SAIREDIS_IMAGE):$(USONIC_IMAGE_TAG) .
+							       --progress=plain -t $(DOCKER_REPO)/$(USONIC_SAIREDIS_IMAGE):$(USONIC_IMAGE_TAG) .
 
 swss:
 	DOCKER_BUILDKIT=1 docker build $(DOCKER_BUILD_OPTION) --build-arg USONIC_SWSS_COMMON_IMAGE=$(DOCKER_REPO)/$(USONIC_SWSS_COMMON_IMAGE):$(USONIC_IMAGE_TAG) \
 							      --build-arg USONIC_SAIREDIS_IMAGE=$(DOCKER_REPO)/$(USONIC_SAIREDIS_IMAGE):$(USONIC_IMAGE_TAG) \
 							      --build-arg USONIC_LIBTEAM_IMAGE=$(DOCKER_REPO)/$(USONIC_LIBTEAM_IMAGE):$(USONIC_IMAGE_TAG) \
 							      --build-arg USONIC_LLDPD_IMAGE=$(DOCKER_REPO)/$(USONIC_LLDPD_IMAGE):$(USONIC_IMAGE_TAG) \
-							      --no-cache --progress=plain -f docker/build-swss.Dockerfile \
+							       --progress=plain -f docker/build-swss.Dockerfile \
 							      -t $(DOCKER_REPO)/$(USONIC_SWSS_IMAGE):$(USONIC_IMAGE_TAG) .
 
 libteam:
@@ -104,13 +104,10 @@ run-image:
 							      --build-arg USONIC_LIBTEAM_IMAGE=$(DOCKER_REPO)/$(USONIC_LIBTEAM_IMAGE):$(USONIC_IMAGE_TAG) \
 							      --build-arg USONIC_SONIC_FRR_IMAGE=$(DOCKER_REPO)/$(USONIC_SONIC_FRR_IMAGE):$(USONIC_IMAGE_TAG) \
 							      --build-arg USONIC_LLDPD_IMAGE=$(DOCKER_REPO)/$(USONIC_LLDPD_IMAGE):$(USONIC_IMAGE_TAG) \
-							      --no-cache --progress=plain -f docker/run.Dockerfile \
+							       --progress=plain -f docker/run.Dockerfile \
 							      -t $(DOCKER_REPO)/$(USONIC_RUN_IMAGE):$(USONIC_IMAGE_TAG) .
 
 debug-image:
-#	cd $(LLDPD_SYNC_DIR) && git config --global user.email "BPraveen@palcnetworks.com"
-#	cd $(LLDPD_SYNC_DIR) && git config --global user.name "PRAVEEN-BABY"
-#	cd $(LLDPD_SYNC_DIR) && git am $(LLDPD_PATCH)
 	DOCKER_BUILDKIT=1 docker build $(DOCKER_BUILD_OPTION) --build-arg USONIC_SWSS_COMMON_IMAGE=$(DOCKER_REPO)/$(USONIC_SWSS_COMMON_IMAGE):$(USONIC_IMAGE_TAG) \
 							      --build-arg USONIC_SAIREDIS_IMAGE=$(DOCKER_REPO)/$(USONIC_SAIREDIS_IMAGE):$(USONIC_IMAGE_TAG) \
 							      --build-arg USONIC_SWSS_IMAGE=$(DOCKER_REPO)/$(USONIC_SWSS_IMAGE):$(USONIC_IMAGE_TAG) \
@@ -118,7 +115,7 @@ debug-image:
 							      --build-arg USONIC_SONIC_FRR_IMAGE=$(DOCKER_REPO)/$(USONIC_SONIC_FRR_IMAGE):$(USONIC_IMAGE_TAG) \
 							      --build-arg USONIC_LLDPD_IMAGE=$(DOCKER_REPO)/$(USONIC_LLDPD_IMAGE):$(USONIC_IMAGE_TAG) \
 							      --build-arg USONIC_RUN_IMAGE=$(DOCKER_REPO)/$(USONIC_RUN_IMAGE):$(USONIC_IMAGE_TAG) \
-							     --no-cache --progress=plain -f docker/debug.Dockerfile \
+							      --progress=plain -f docker/debug.Dockerfile \
 							      -t $(DOCKER_REPO)/$(USONIC_DEBUG_IMAGE):$(USONIC_IMAGE_TAG) .
 
 run:
