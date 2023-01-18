@@ -21,6 +21,8 @@ RUN --mount=type=bind,source=/tmp,target=/tmp,from=sairedis dpkg -i /tmp/*.deb
 RUN --mount=type=bind,source=/tmp,target=/tmp,from=libteam dpkg -i /tmp/*.deb
 
 RUN --mount=type=bind,source=sm/sonic-swss,target=/root/sm/sonic-swss,rw \
+    --mount=type=bind,source=patches/sonic-swss,target=/root/patches \
     --mount=type=tmpfs,target=/root/.pc,rw \
-    --mount=type=bind,source=make/swss,target=/root/make/swss\
+    --mount=type=bind,source=make/swss,target=/root/make/swss \
+    cd /root && quilt upgrade && quilt push -a && \
     make -C /root/make/swss

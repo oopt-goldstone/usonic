@@ -1,0 +1,21 @@
+Index: usonic-oopt/sm/sonic-swss/swssconfig/swssconfig.cpp
+===================================================================
+--- usonic-oopt.orig/sm/sonic-swss/swssconfig/swssconfig.cpp
++++ usonic-oopt/sm/sonic-swss/swssconfig/swssconfig.cpp
+@@ -19,6 +19,7 @@ const char* const op_name            = "
+ const char* const name_delimiter     = ":";
+ const int el_count = 2;
+ 
++const string unixpath           = "/var/run/redis/redis.sock";
+ const string SWSS_CONFIG_DIR    = "/etc/swss/config.d/";
+ 
+ void usage()
+@@ -41,7 +42,7 @@ void dump_db_item(KeyOpFieldsValuesTuple
+ 
+ bool write_db_data(vector<KeyOpFieldsValuesTuple> &db_items)
+ {
+-    DBConnector db("APPL_DB", 0, false);
++    DBConnector db(0, unixpath, false);
+     RedisPipeline pipeline(&db); // dtor of RedisPipeline will automatically flush data
+     unordered_map<string, ProducerStateTable> table_map;
+     
