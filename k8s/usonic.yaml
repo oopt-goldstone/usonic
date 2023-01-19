@@ -566,13 +566,13 @@ spec:
               image: docker.io/bitnami/kubectl:latest
               imagePullPolicy: IfNotPresent
               command: ['kubectl', 'wait', '--for=condition=available', 'deploy/usonic-port', '--timeout=5m']
-#- name: swssconfig
-#              image: ghcr.io/microsonic/usonic-debug:202205
-#              imagePullPolicy: IfNotPresent
-#              command: ['swssconfig']
-#              volumeMounts:
-#              - name: redis-sock
-#                mountPath: /var/run/redis/redis.sock
+            - name: swssconfig
+              image: ghcr.io/microsonic/usonic-debug:202205
+              imagePullPolicy: IfNotPresent
+              command: ['swssconfig']
+              volumeMounts:
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
             containers:
             - name: vlanmgrd
               image: ghcr.io/microsonic/usonic-debug:202205
