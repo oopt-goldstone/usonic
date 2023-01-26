@@ -3,7 +3,7 @@ ifndef DOCKER_CMD
 endif
 
 ifndef USONIC_IMAGE_TAG
-    USONIC_IMAGE_TAG=latest
+    USONIC_IMAGE_TAG=202205
 endif
 
 ifndef USONIC_RUN_IMAGE
