@@ -1,3 +1,1 @@
-copporch_bug_fix.patch
-[portsyncd]:_fix_portsyncd_restart_case_(#1019).patch
-swssconfig:_use_unix_domain_socket.patch
+swssconfig_use_unix_domain_socket.patch

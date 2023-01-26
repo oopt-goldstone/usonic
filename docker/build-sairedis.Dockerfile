@@ -5,7 +5,7 @@ FROM ${USONIC_SWSS_COMMON_IMAGE} as swss_common
 FROM debian:buster
 
 RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt \
-apt update && apt install -qy make g++ graphviz autotools-dev autoconf doxygen libnl-3-dev libnl-genl-3-dev libnl-route-3-dev libnl-nf-3-dev libhiredis-dev perl libxml-simple-perl aspell aspell-en swig3.0 libgtest-dev dh-exec debhelper libtool pkg-config libpython2.7-dev python3-all python-all libpython3-dev libpython-dev quilt patchelf libboost-dev libzmq3-dev libzmq5 autoconf-archive libyaml-0-2 wget
+apt update && apt install -qy --no-install-recommends make g++ graphviz autotools-dev autoconf doxygen libnl-3-dev libnl-genl-3-dev libnl-route-3-dev libnl-nf-3-dev libhiredis-dev perl libxml-simple-perl aspell aspell-en swig3.0 libgtest-dev dh-exec debhelper libtool pkg-config libpython2.7-dev python3-all python-all libpython3-dev libpython-dev quilt patchelf libboost-dev libzmq3-dev libzmq5 autoconf-archive libyaml-0-2 wget build-essential
 
 ADD https://sonicstorage.blob.core.windows.net/public/sai/bcmsai/REL_7.0/7.1.0.0-6/libsaibcm_7.1.0.0-6_amd64.deb /tmp/
 ADD https://sonicstorage.blob.core.windows.net/public/sai/bcmsai/REL_7.0/7.1.0.0-6/libsaibcm-dev_7.1.0.0-6_amd64.deb /tmp/
