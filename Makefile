@@ -84,15 +84,11 @@ swss:
 							      -t $(DOCKER_REPO)/$(USONIC_SWSS_IMAGE):$(USONIC_IMAGE_TAG) .
 
 libteam:
-	cd $(LIBTEAM_DIR) && make all
-
 	DOCKER_BUILDKIT=1 docker build $(DOCKER_BUILD_OPTION) --build-arg USONIC_SWSS_COMMON_IMAGE=$(DOCKER_REPO)/$(USONIC_SWSS_COMMON_IMAGE):$(USONIC_IMAGE_TAG) \
 							      -f docker/build-libteam.Dockerfile \
 							      -t $(DOCKER_REPO)/$(USONIC_LIBTEAM_IMAGE):$(USONIC_IMAGE_TAG) .
 
 lldpd:
-	cd $(LLDPD_DIR) && make all
-
 	DOCKER_BUILDKIT=1 docker build $(DOCKER_BUILD_OPTION) --build-arg USONIC_SWSS_COMMON_IMAGE=$(DOCKER_REPO)/$(USONIC_SWSS_COMMON_IMAGE):$(USONIC_IMAGE_TAG) \
 							      -f docker/build-lldpd.Dockerfile \
 							      -t $(DOCKER_REPO)/$(USONIC_LLDPD_IMAGE):$(USONIC_IMAGE_TAG) .

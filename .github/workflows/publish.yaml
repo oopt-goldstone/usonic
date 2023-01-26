@@ -1,148 +1,148 @@
 on:
-    push:
-        branches:
-        - master
-        - 201811
-        - 201904
-        - 202205
+  push:
+    branches:
+      - master
+      - "201811"
+      - "201904"
+      - "202205"
 jobs:
-    job:
-        runs-on: ubuntu-latest
-        steps:
-        - uses: docker/setup-buildx-action@v1
-        - name: Login to GitHub Container Registry
-          uses: docker/login-action@v1
-          with:
-            registry: ghcr.io
-            username: ${{ github.repository_owner }}
-            password: ${{ secrets.GH_A_PAT }}
-        - run: |
-            import os
-            ref = os.environ['GITHUB_REF']
-            branch = ref[11:]
-            tag = 'latest' if branch == 'master' else branch
-            with open(os.environ['GITHUB_ENV'], 'a') as f:
-              f.write(f"DOCKER_IMAGE_TAG={tag}")
-          shell: python
-        - uses: actions/checkout@v2
-        - run: git submodule update --init --recursive sm/sonic-py-swsssdk sm/sonic-sairedis sm/sonic-swss sm/sonic-swss-common sm/sonic-frr sm/sonic-dbsyncd
-        - run: git submodule update --init sm/sonic-buildimage
-        - run: cd sm/libteam && make all
-        - run: cd src/lldpd && make all
-        - name: Cache Docker layers
-          uses: actions/cache@v2
-          with:
-            path: /tmp/.buildx-cache
-            key: ${{ github.ref }}-${{ github.sha }}
-            restore-keys: |
-              ${{ github.ref }}-${{ github.sha }}
-              ${{ github.ref }}
-              refs/head/${{ github.event.pull_request.base.ref }}
-        - name: Build usonic-sonic-frr
-          uses: docker/build-push-action@v2
-          with:
-            context: ./
-            file: ./docker/build-sonic-frr.Dockerfile
-            builder: ${{ steps.buildx.outputs.name }}
-            tags: ghcr.io/microsonic/usonic-sonic-frr:${{ env.DOCKER_IMAGE_TAG }}
-            cache-from: type=local,src=/tmp/.buildx-cache
-            cache-to: type=local,dest=/tmp/.buildx-cache
-            push: true
-        - name: Build usonic-swss-common
-          uses: docker/build-push-action@v2
-          with:
-            context: ./
-            file: ./docker/build-swss-common.Dockerfile
-            builder: ${{ steps.buildx.outputs.name }}
-            tags: ghcr.io/microsonic/usonic-swss-common:${{ env.DOCKER_IMAGE_TAG }}
-            cache-from: type=local,src=/tmp/.buildx-cache
-            cache-to: type=local,dest=/tmp/.buildx-cache
-            push: true
-        - name: Build usonic-sairedis
-          uses: docker/build-push-action@v2
-          with:
-            context: ./
-            file: ./docker/build-sairedis.Dockerfile
-            builder: ${{ steps.buildx.outputs.name }}
-            tags: ghcr.io/microsonic/usonic-sairedis:${{ env.DOCKER_IMAGE_TAG }}
-            build-args: |
-              USONIC_SWSS_COMMON_IMAGE=ghcr.io/microsonic/usonic-swss-common:${{ env.DOCKER_IMAGE_TAG }}
-            cache-from: type=local,src=/tmp/.buildx-cache
-            cache-to: type=local,dest=/tmp/.buildx-cache
-            push: true
-        - name: Build usonic-libteam
-          uses: docker/build-push-action@v2
-          with:
-            context: ./
-            file: ./docker/build-libteam.Dockerfile
-            builder: ${{ steps.buildx.outputs.name }}
-            tags: ghcr.io/microsonic/usonic-libteam:${{ env.DOCKER_IMAGE_TAG }}
-            build-args: |
-              USONIC_SWSS_COMMON_IMAGE=ghcr.io/microsonic/usonic-swss-common:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_SAIREDIS_IMAGE=ghcr.io/microsonic/usonic-sairedis:${{ env.DOCKER_IMAGE_TAG }}
-            cache-from: type=local,src=/tmp/.buildx-cache
-            cache-to: type=local,dest=/tmp/.buildx-cache
-            push: true
-        - name: Build usonic-lldpd
-          uses: docker/build-push-action@v2
-          with:
-            context: ./
-            file: ./docker/build-lldpd.Dockerfile
-            builder: ${{ steps.buildx.outputs.name }}
-            tags: ghcr.io/microsonic/usonic-lldpd:${{ env.DOCKER_IMAGE_TAG }}
-            build-args: |
-              USONIC_SWSS_COMMON_IMAGE=ghcr.io/microsonic/usonic-swss-common:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_SAIREDIS_IMAGE=ghcr.io/microsonic/usonic-sairedis:${{ env.DOCKER_IMAGE_TAG }}
-            cache-from: type=local,src=/tmp/.buildx-cache
-            cache-to: type=local,dest=/tmp/.buildx-cache
-            push: true
-        - name: Build usonic-swss
-          uses: docker/build-push-action@v2
-          with:
-            context: ./
-            file: ./docker/build-swss.Dockerfile
-            builder: ${{ steps.buildx.outputs.name }}
-            tags: ghcr.io/microsonic/usonic-swss:${{ env.DOCKER_IMAGE_TAG }}
-            build-args: |
-              USONIC_SWSS_COMMON_IMAGE=ghcr.io/microsonic/usonic-swss-common:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_SAIREDIS_IMAGE=ghcr.io/microsonic/usonic-sairedis:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_LIBTEAM_IMAGE=ghcr.io/microsonic/usonic-libteam:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_LLDPD_IMAGE=ghcr.io/microsonic/usonic-lldpd:${{ env.DOCKER_IMAGE_TAG }}
-            cache-from: type=local,src=/tmp/.buildx-cache
-            cache-to: type=local,dest=/tmp/.buildx-cache
-            push: true
-        - name: Build run-image
-          uses: docker/build-push-action@v2
-          with:
-            context: ./
-            file: ./docker/run.Dockerfile
-            builder: ${{ steps.buildx.outputs.name }}
-            tags: ghcr.io/microsonic/usonic:${{ env.DOCKER_IMAGE_TAG }}
-            build-args: |
-              USONIC_SWSS_COMMON_IMAGE=ghcr.io/microsonic/usonic-swss-common:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_SAIREDIS_IMAGE=ghcr.io/microsonic/usonic-sairedis:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_SWSS_IMAGE=ghcr.io/microsonic/usonic-swss:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_LIBTEAM_IMAGE=ghcr.io/microsonic/usonic-libteam:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_SONIC_FRR_IMAGE=ghcr.io/microsonic/usonic-sonic-frr:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_LLDPD_IMAGE=ghcr.io/microsonic/usonic-lldpd:${{ env.DOCKER_IMAGE_TAG }}
-            cache-from: type=local,src=/tmp/.buildx-cache
-            cache-to: type=local,dest=/tmp/.buildx-cache
-            push: true
-        - name: Build debug-image
-          uses: docker/build-push-action@v2
-          with:
-            context: ./
-            file: ./docker/debug.Dockerfile
-            builder: ${{ steps.buildx.outputs.name }}
-            tags: ghcr.io/microsonic/usonic-debug:${{ env.DOCKER_IMAGE_TAG }}
-            build-args: |
-              USONIC_SWSS_COMMON_IMAGE=ghcr.io/microsonic/usonic-swss-common:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_SAIREDIS_IMAGE=ghcr.io/microsonic/usonic-sairedis:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_SWSS_IMAGE=ghcr.io/microsonic/usonic-swss:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_LIBTEAM_IMAGE=ghcr.io/microsonic/usonic-libteam:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_SONIC_FRR_IMAGE=ghcr.io/microsonic/usonic-sonic-frr:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_LLDPD_IMAGE=ghcr.io/microsonic/usonic-lldpd:${{ env.DOCKER_IMAGE_TAG }}
-              USONIC_RUN_IMAGE=ghcr.io/microsonic/usonic:${{ env.DOCKER_IMAGE_TAG }}
-            cache-from: type=local,src=/tmp/.buildx-cache
-            cache-to: type=local,dest=/tmp/.buildx-cache
-            push: true
+  job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: docker/setup-buildx-action@v2
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GHCR_USER }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - run: |
+          import os
+          ref = os.environ['GITHUB_REF']
+          branch = ref[11:]
+          tag = 'latest' if branch == 'master' else branch
+          with open(os.environ['GITHUB_ENV'], 'a') as f:
+            f.write(f"DOCKER_IMAGE_TAG={tag}")
+        shell: python
+      - uses: actions/checkout@v2
+      - run: git submodule update --init --recursive sm/sonic-py-swsssdk sm/sonic-sairedis sm/sonic-swss sm/sonic-swss-common sm/sonic-frr sm/sonic-dbsyncd
+      - run: git submodule update --init sm/sonic-buildimage
+      - run: cd sm/libteam && make all
+      - run: cd src/lldpd && make all
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ github.ref }}-${{ github.sha }}
+          restore-keys: |
+            ${{ github.ref }}-${{ github.sha }}
+            ${{ github.ref }}
+            refs/head/${{ github.event.pull_request.base.ref }}
+      - name: Build usonic-sonic-frr
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./docker/build-sonic-frr.Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: ghcr.io/microsonic/usonic-sonic-frr:${{ env.DOCKER_IMAGE_TAG }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          push: true
+      - name: Build usonic-swss-common
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./docker/build-swss-common.Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: ghcr.io/microsonic/usonic-swss-common:${{ env.DOCKER_IMAGE_TAG }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          push: true
+      - name: Build usonic-sairedis
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./docker/build-sairedis.Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: ghcr.io/microsonic/usonic-sairedis:${{ env.DOCKER_IMAGE_TAG }}
+          build-args: |
+            USONIC_SWSS_COMMON_IMAGE=ghcr.io/microsonic/usonic-swss-common:${{ env.DOCKER_IMAGE_TAG }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          push: true
+      - name: Build usonic-libteam
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./docker/build-libteam.Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: ghcr.io/microsonic/usonic-libteam:${{ env.DOCKER_IMAGE_TAG }}
+          build-args: |
+            USONIC_SWSS_COMMON_IMAGE=ghcr.io/microsonic/usonic-swss-common:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_SAIREDIS_IMAGE=ghcr.io/microsonic/usonic-sairedis:${{ env.DOCKER_IMAGE_TAG }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          push: true
+      - name: Build usonic-lldpd
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./docker/build-lldpd.Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: ghcr.io/microsonic/usonic-lldpd:${{ env.DOCKER_IMAGE_TAG }}
+          build-args: |
+            USONIC_SWSS_COMMON_IMAGE=ghcr.io/microsonic/usonic-swss-common:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_SAIREDIS_IMAGE=ghcr.io/microsonic/usonic-sairedis:${{ env.DOCKER_IMAGE_TAG }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          push: true
+      - name: Build usonic-swss
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./docker/build-swss.Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: ghcr.io/microsonic/usonic-swss:${{ env.DOCKER_IMAGE_TAG }}
+          build-args: |
+            USONIC_SWSS_COMMON_IMAGE=ghcr.io/microsonic/usonic-swss-common:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_SAIREDIS_IMAGE=ghcr.io/microsonic/usonic-sairedis:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_LIBTEAM_IMAGE=ghcr.io/microsonic/usonic-libteam:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_LLDPD_IMAGE=ghcr.io/microsonic/usonic-lldpd:${{ env.DOCKER_IMAGE_TAG }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          push: true
+      - name: Build run-image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./docker/run.Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: ghcr.io/microsonic/usonic:${{ env.DOCKER_IMAGE_TAG }}
+          build-args: |
+            USONIC_SWSS_COMMON_IMAGE=ghcr.io/microsonic/usonic-swss-common:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_SAIREDIS_IMAGE=ghcr.io/microsonic/usonic-sairedis:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_SWSS_IMAGE=ghcr.io/microsonic/usonic-swss:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_LIBTEAM_IMAGE=ghcr.io/microsonic/usonic-libteam:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_SONIC_FRR_IMAGE=ghcr.io/microsonic/usonic-sonic-frr:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_LLDPD_IMAGE=ghcr.io/microsonic/usonic-lldpd:${{ env.DOCKER_IMAGE_TAG }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          push: true
+      - name: Build debug-image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./
+          file: ./docker/debug.Dockerfile
+          builder: ${{ steps.buildx.outputs.name }}
+          tags: ghcr.io/microsonic/usonic-debug:${{ env.DOCKER_IMAGE_TAG }}
+          build-args: |
+            USONIC_SWSS_COMMON_IMAGE=ghcr.io/microsonic/usonic-swss-common:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_SAIREDIS_IMAGE=ghcr.io/microsonic/usonic-sairedis:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_SWSS_IMAGE=ghcr.io/microsonic/usonic-swss:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_LIBTEAM_IMAGE=ghcr.io/microsonic/usonic-libteam:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_SONIC_FRR_IMAGE=ghcr.io/microsonic/usonic-sonic-frr:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_LLDPD_IMAGE=ghcr.io/microsonic/usonic-lldpd:${{ env.DOCKER_IMAGE_TAG }}
+            USONIC_RUN_IMAGE=ghcr.io/microsonic/usonic:${{ env.DOCKER_IMAGE_TAG }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+          push: true
