@@ -1,0 +1,79 @@
+Index: usonic/sm/sonic-swss/cfgmgr/teammgr.cpp
+===================================================================
+--- usonic.orig/sm/sonic-swss/cfgmgr/teammgr.cpp
++++ usonic/sm/sonic-swss/cfgmgr/teammgr.cpp
+@@ -124,6 +124,7 @@ void TeamMgr::doLagTask(Consumer &consumer)
+         {
+             int min_links = 0;
+             bool fallback = false;
++	    bool static_lag = false;
+             string admin_status = DEFAULT_ADMIN_STATUS_STR;
+             string mtu = DEFAULT_MTU_STR;
+ 
+@@ -153,11 +154,16 @@ void TeamMgr::doLagTask(Consumer &consumer)
+                     mtu = fvValue(i);
+                     SWSS_LOG_INFO("Get MTU %s", mtu.c_str());
+                 }
++		else if (fvField(i) == "static")
++		{
++		    static_lag = true;
++		    SWSS_LOG_INFO ("static %d", static_lag);
++		}
+             }
+ 
+             if (m_lagList.find(alias) == m_lagList.end())
+             {
+-                if (addLag(alias, min_links, fallback) == task_need_retry)
++                if (addLag(alias, min_links, fallback, static_lag) == task_need_retry)
+                 {
+                     it++;
+                     continue;
+@@ -365,7 +371,7 @@ bool TeamMgr::setLagMtu(const string &alias, const string &mtu)
+     return true;
+ }
+ 
+-task_process_status TeamMgr::addLag(const string &alias, int min_links, bool fallback)
++task_process_status TeamMgr::addLag(const string &alias, int min_links, bool fallback, bool static_lag)
+ {
+     SWSS_LOG_ENTER();
+ 
+@@ -373,11 +379,21 @@ task_process_status TeamMgr::addLag(const string &alias, int min_links, bool fal
+     string res;
+ 
+     stringstream conf;
+-    conf << "'{\"device\":\"" << alias << "\","
+-         << "\"hwaddr\":\"" << m_mac.to_string() << "\","
+-         << "\"runner\":{"
+-         << "\"active\":true,"
+-         << "\"name\":\"lacp\"";
++
++    if (static_lag) {
++	conf << "'{\"device\":\"" << alias << "\","
++             << "\"hwaddr\":\"" << m_mac.to_string() << "\","
++             << "\"runner\":{"
++             << "\"name\":\"loadbalance\"";
++
++    } else {
++
++       conf << "'{\"device\":\"" << alias << "\","
++            << "\"hwaddr\":\"" << m_mac.to_string() << "\","
++            << "\"runner\":{"
++            << "\"active\":true,"
++            << "\"name\":\"lacp\"";
++    }
+ 
+     if (min_links != 0)
+     {
+Index: usonic/sm/sonic-swss/cfgmgr/teammgr.h
+===================================================================
+--- usonic.orig/sm/sonic-swss/cfgmgr/teammgr.h
++++ usonic/sm/sonic-swss/cfgmgr/teammgr.h
+@@ -37,7 +37,7 @@ private:
+     void doLagMemberTask(Consumer &consumer);
+     void doPortUpdateTask(Consumer &consumer);
+ 
+-    task_process_status addLag(const string &alias, int min_links, bool fall_back);
++    task_process_status addLag(const string &alias, int min_links, bool fall_back, bool static_lag);
+     bool removeLag(const string &alias);
+     task_process_status addLagMember(const string &lag, const string &member);
+     bool removeLagMember(const string &lag, const string &member);
