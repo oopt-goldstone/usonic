@@ -7,7 +7,7 @@ LLDPD_VERSION = 0.9.6
 LLDPD_VERSION_SUFFIX = 1
 LLDPD_VERSION_FULL = $(LLDPD_VERSION)-$(LLDPD_VERSION_SUFFIX)
 
-LLDP_URL = http://ftp.debian.org/debian/pool/main/l/lldpd
+LLDP_URL = http://old-releases.ubuntu.com/ubuntu/pool/universe/l/lldpd
 
 DSC_FILE = lldpd_$(LLDPD_VERSION_FULL).dsc
 ORIG_FILE = lldpd_$(LLDPD_VERSION).orig.tar.gz
@@ -29,8 +29,8 @@ all:
 
 	pushd lldpd-$(LLDPD_VERSION)
 	git init
-	git config user.name "PRAVEEN-BABY"
-	git config user.email "BPraveen@palcnetworks.com"
+	git config user.name "user"
+	git config user.email "info@user.com"
 	git add -f *
 	git commit -m "unmodified lldp source"
 	popd
