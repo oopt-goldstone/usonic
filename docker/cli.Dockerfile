@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:experimental
 FROM debian:buster
 
-RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt,sharing=locked \
+RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt \
 apt update && apt install -qy libnl-3-200 libnl-genl-3-200 libnl-route-3-200 libnl-nf-3-200 libhiredis0.14 python libpython-dev python-setuptools python-pip
 
 RUN --mount=type=bind,source=sm/sonic-py-swsssdk,target=/root,rw cd /root && python setup.py install
