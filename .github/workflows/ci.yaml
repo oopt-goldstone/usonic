@@ -72,9 +72,25 @@ jobs:
             cache-from: type=gha
             cache-to: type=gha,mode=max
             push: true
+        - name: Docker meta for cli-image
+          id: meta_cli
+          uses: docker/metadata-action@v4
+          with:
+            images: ghcr.io/oopt-goldstone/usonic-cli
+        - name: Build cli-image
+          uses: docker/build-push-action@v4
+          with:
+            context: ./
+            file: ./docker/cli.Dockerfile
+            tags: ${{ steps.meta_cli.outputs.tags }}
+            labels: ${{ steps.meta_cli.outputs.labels }}
+            cache-from: type=gha
+            cache-to: type=gha,mode=max
+            push: true
         - uses: imranismail/setup-kustomize@v1
         - run: |
             cd k8s && kustomize edit set image ghcr.io/oopt-goldstone/usonic-debug:latest=${{ steps.meta_debug.outputs.tags }}
+            cd k8s && kustomize edit set image ghcr.io/oopt-goldstone/usonic-cli:latest=${{ steps.meta_cli.outputs.tags }}
         - run: |
             $K apply -k ./k8s
             while [ true ]
