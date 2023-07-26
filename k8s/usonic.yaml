@@ -68,7 +68,7 @@ spec:
                 capabilities:
                     add: ["NET_ADMIN"]
             - name: init-configdb
-              image: docker.io/microsonic/usonic-cli:latest
+              image: ghcr.io/oopt-goldstone/usonic-cli:latest
               imagePullPolicy: IfNotPresent
               command: ['sonic-cfggen', '-s', '/var/run/redis/redis.sock', '-k', 'dummy', '-p', '/etc/usonic/port_config.ini', '-j', '/etc/sonic/config_db.json', '--write-to-db']
               volumeMounts:
@@ -78,6 +78,8 @@ spec:
                 mountPath: /etc/sonic/
               - name: usonic-config
                 mountPath: /etc/usonic/
+              - name: redis-sock
+                mountPath: /var/run/redis/redis.sock
             - name: complete-init
               image: ghcr.io/oopt-goldstone/usonic-debug:latest
               imagePullPolicy: IfNotPresent

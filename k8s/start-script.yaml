@@ -18,6 +18,8 @@ data:
         cnt=$(expr $cnt + 1)
         lhs=$(echo $line | cut -d: -f1)
         rhs=veth$cnt
+        ip link del $lhs || true
+        ip link del $rhs || true
         ip link add $lhs type veth peer name $rhs
         ip link set up dev $lhs
         ip link set up dev $rhs

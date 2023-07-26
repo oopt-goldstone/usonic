@@ -5,7 +5,7 @@ metadata:
 spec:
     containers:
     - name: cli
-      image: docker.io/microsonic/usonic-cli:latest
+      image: ghcr.io/oopt-goldstone/usonic-cli:latest
       imagePullPolicy: IfNotPresent
       command: ['sh', '-c', 'sleep 100000']
       volumeMounts:
