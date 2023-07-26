@@ -9,39 +9,37 @@ on:
         - master
         - 201811
         - 201904
+    pull_request_target:
+        types: [labeled]
+
 env:
     K: sudo k3s kubectl
 jobs:
     build:
         runs-on: ubuntu-latest
-
+        if: >-
+          (github.event_name == 'push') ||
+          ((github.event_name == 'pull_request') && (github.event.pull_request.head.repo.fork == false)) ||
+          ((github.event_name == 'pull_request_target') && (github.event.pull_request.head.repo.fork == true) && (contains(github.event.pull_request.labels.*.name, 'safe to test')))
         permissions:
           contents: read
           packages: write
 
         steps:
-        - uses: docker/setup-buildx-action@v1
-          id: buildx
+        - uses: docker/setup-buildx-action@v2
+          with:
+            install: true
         - name: Login to GitHub Container Registry
           uses: docker/login-action@v2
           with:
             registry: ghcr.io
-            username: ${{ github.actor }}
+            username: ${{ secrets.GHCR_USER }}
             password: ${{ secrets.GITHUB_TOKEN }}
         - name: install k3s
           run: curl -sfL https://get.k3s.io | sh -s - --docker
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
         - run: git submodule update --init --recursive sm/sonic-py-swsssdk sm/sonic-sairedis sm/sonic-swss sm/sonic-swss-common sm/sonic-utilities sm/sonic-frr sm/sonic-dbsyncd
         - run: git submodule update --init sm/sonic-buildimage
-        - name: Cache Docker layers
-          uses: actions/cache@v2
-          with:
-            path: /tmp/.buildx-cache
-            key: ${{ github.ref }}-${{ github.sha }}
-            restore-keys: |
-              ${{ github.ref }}-${{ github.sha }}
-              ${{ github.ref }}
-              refs/head/${{ github.event.pull_request.base.ref }}
         - name: Docker meta for run-image
           id: meta_run
           uses: docker/metadata-action@v4
@@ -53,7 +51,6 @@ jobs:
             context: ./
             file: ./docker/build.Dockerfile
             target: run
-            builder: ${{ steps.buildx.outputs.name }}
             tags: ${{ steps.meta_run.outputs.tags }}
             labels: ${{ steps.meta_run.outputs.labels }}
             cache-from: type=gha
@@ -70,7 +67,6 @@ jobs:
             context: ./
             file: ./docker/build.Dockerfile
             target: debug
-            builder: ${{ steps.buildx.outputs.name }}
             tags: ${{ steps.meta_debug.outputs.tags }}
             labels: ${{ steps.meta_debug.outputs.labels }}
             cache-from: type=gha
