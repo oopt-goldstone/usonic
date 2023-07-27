@@ -91,8 +91,9 @@ jobs:
             push: true
         - uses: imranismail/setup-kustomize@v1
         - run: |
-            cd k8s && kustomize edit set image ghcr.io/oopt-goldstone/usonic-debug:latest=${{ steps.meta_debug.outputs.tags }}
-            cd k8s && kustomize edit set image ghcr.io/oopt-goldstone/usonic-cli:latest=${{ steps.meta_cli.outputs.tags }}
+            kustomize edit set image ghcr.io/oopt-goldstone/usonic-debug:latest=${{ steps.meta_debug.outputs.tags }}
+            kustomize edit set image ghcr.io/oopt-goldstone/usonic-cli:latest=${{ steps.meta_cli.outputs.tags }}
+          working-directory: ./k8s
 # TODO We can't test usonic in the virtual environment, since the SAI vslib is not available in the 202205 branch
 #        - run: |
 #            $K apply -k ./k8s
