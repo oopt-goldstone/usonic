@@ -7,10 +7,10 @@ FROM ${USONIC_SWSS_COMMON_IMAGE} as swss_common
 FROM ${USONIC_SAIREDIS_IMAGE} as sairedis
 FROM ${USONIC_LIBTEAM_IMAGE} as libteam
 
-FROM debian:buster 
+FROM debian:bullseye 
 
 RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt \
-apt update && apt install -qy --no-install-recommends make g++ graphviz autotools-dev autoconf doxygen  libhiredis-dev perl libxml-simple-perl aspell swig libgtest-dev dh-exec debhelper libtool pkg-config python3-all python-all libpython3-dev libpython-dev quilt patchelf libboost-dev libteam-dev build-essential libdaemon-dev libdbus-1-dev libjansson-dev pkg-config libbsd-dev check libsnmp-dev libpci-dev libxml2-dev libevent-dev libreadline-dev libcap-dev libzmq5-dev cdbs fakeroot bison flex libyaml-0-2
+apt update && apt install -qy --no-install-recommends make g++ graphviz autotools-dev autoconf doxygen  libhiredis-dev perl libxml-simple-perl aspell swig libgtest-dev dh-exec debhelper libtool pkg-config python3-all python-all libpython3-dev libpython2-dev quilt patchelf libboost-dev libteam-dev build-essential libdaemon-dev libdbus-1-dev libjansson-dev pkg-config libbsd-dev check libsnmp-dev libpci-dev libxml2-dev libevent-dev libreadline-dev libcap-dev libzmq5-dev cdbs fakeroot bison flex libyaml-0-2
 
 
 RUN --mount=type=bind,source=sm/sonic-buildimage/src/libnl3,target=/root/libnl3,rw \
