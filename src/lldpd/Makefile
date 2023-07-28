@@ -29,8 +29,8 @@ all:
 
 	pushd lldpd-$(LLDPD_VERSION)
 	git init
-	git config user.name "user"
-	git config user.email "info@user.com"
+	git config user.name "Goldstone"
+	git config user.email "goldstone-nos@googlegroups.com"
 	git add -f *
 	git commit -m "unmodified lldp source"
 	popd
