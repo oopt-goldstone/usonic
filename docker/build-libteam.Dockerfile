@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:experimental
-ARG USONIC_SWSS_COMMON_IMAGE=usonic-swss-common:latest
+ARG USONIC_SWSS_COMMON_IMAGE=usonic-swss-common:202205
 
 FROM ${USONIC_SWSS_COMMON_IMAGE} as swss_common
 
