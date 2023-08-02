@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:experimental
-ARG USONIC_SWSS_COMMON_IMAGE=usonic-swss-common:latest
-ARG USONIC_SAIREDIS_IMAGE=usonic-sairedis:latest
-ARG USONIC_LIBTEAM_IMAGE=usonic-libteam:latest
+ARG USONIC_SWSS_COMMON_IMAGE=usonic-swss-common:202205
+ARG USONIC_SAIREDIS_IMAGE=usonic-sairedis:202205
+ARG USONIC_LIBTEAM_IMAGE=usonic-libteam:202205
 
 FROM ${USONIC_SWSS_COMMON_IMAGE} as swss_common
 FROM ${USONIC_SAIREDIS_IMAGE} as sairedis
