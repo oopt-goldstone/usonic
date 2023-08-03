@@ -22,3 +22,6 @@
 [submodule "sm/sonic-dbsyncd"]
 	path = sm/sonic-dbsyncd
 	url = https://github.com/Azure/sonic-dbsyncd.git
+[submodule "sm/sonic-platform-common"]
+	path = sm/sonic-platform-common
+	url = https://github.com/sonic-net/sonic-platform-common.git
