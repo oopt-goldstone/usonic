@@ -40,8 +40,8 @@ jobs:
         - name: install k3s
           run: curl -sfL https://get.k3s.io | sh -s - --docker
         - uses: actions/checkout@v3
-        - run: git submodule update --init --recursive sm/sonic-py-swsssdk sm/sonic-sairedis sm/sonic-swss sm/sonic-swss-common sm/sonic-utilities sm/sonic-frr sm/sonic-dbsyncd
-        - run: git submodule update --init sm/sonic-buildimage
+        - run: git submodule update --init --recommend-shallow --depth 1 --recursive sm/sonic-py-swsssdk sm/sonic-sairedis sm/sonic-swss sm/sonic-swss-common sm/sonic-utilities sm/sonic-frr sm/sonic-dbsyncd sm/sonic-platform-common
+        - run: git submodule update --init --recommend-shallow --depth 1 sm/sonic-buildimage
         - name: Docker meta for run-image
           id: meta_run
           uses: docker/metadata-action@v4
