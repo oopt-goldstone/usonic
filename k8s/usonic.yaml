@@ -91,10 +91,12 @@ spec:
             - name: syncd
               image: ghcr.io/oopt-goldstone/usonic-debug:latest
               imagePullPolicy: IfNotPresent
-              command: ['sh', '-c', 'service syslog-ng start && /usr/bin/syncd -p /etc/sonic/sai.profile -d']
+              command: ['sh', '-c', 'service syslog-ng start && /usr/bin/syncd -p /etc/usonic/sai.profile -d']
               volumeMounts:
-              - name: usonic-config
+              - name: config-db-json
                 mountPath: /etc/sonic/
+              - name: usonic-config
+                mountPath: /etc/usonic/
               - name: redis-sock
                 mountPath: /var/run/redis/redis.sock
               - name: sonic-db-config
@@ -116,6 +118,10 @@ spec:
               - name: GLOBAL_MAC_ADDRESS
                 value: "72:16:EA:18:79:F9"
               volumeMounts:
+              - name: config-db-json
+                mountPath: /etc/sonic/
+              - name: usonic-config
+                mountPath: /etc/usonic/
               - name: redis-sock
                 mountPath: /var/run/redis/redis.sock
               - name: sonic-db-config
