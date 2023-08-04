@@ -1,0 +1,23 @@
+Index: usonic/sm/sonic-py-swsssdk/src/swsssdk/configdb.py
+===================================================================
+--- usonic.orig/sm/sonic-py-swsssdk/src/swsssdk/configdb.py
++++ usonic/sm/sonic-py-swsssdk/src/swsssdk/configdb.py
+@@ -23,6 +23,9 @@ from .dbconnector import SonicV2Connecto
+ 
+ PY3K = sys.version_info >= (3, 0)
+ 
++import os
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
++
+ class ConfigDBConnector(SonicV2Connector):
+ 
+     INIT_INDICATOR = 'CONFIG_DB_INITIALIZED'
+@@ -32,7 +35,7 @@ class ConfigDBConnector(SonicV2Connector
+     def __init__(self, **kwargs):
+         # By default, connect to Redis through TCP, which does not requires root.
+         if len(kwargs) == 0:
+-            kwargs['host'] = '127.0.0.1'
++            kwargs['host'] = DEFAULT_DB_HOST
+         super(ConfigDBConnector, self).__init__(**kwargs)
+         self.handlers = {}
+ 
