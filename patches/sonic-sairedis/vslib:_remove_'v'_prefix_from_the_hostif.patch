@@ -1,0 +1,26 @@
+Index: usonic/sm/sonic-sairedis/vslib/src/sai_vs_hostintf.cpp
+===================================================================
+--- usonic.orig/sm/sonic-sairedis/vslib/src/sai_vs_hostintf.cpp
++++ usonic/sm/sonic-sairedis/vslib/src/sai_vs_hostintf.cpp
+@@ -967,7 +967,7 @@ std::string vs_get_veth_name(
+ {
+     SWSS_LOG_ENTER();
+ 
+-    std::string vethname = SAI_VS_VETH_PREFIX + tapname;
++    std::string vethname = tapname;
+ 
+     // check if user override interface names
+ 
+Index: usonic/sm/sonic-sairedis/vslib/src/sai_vs_switch.cpp
+===================================================================
+--- usonic.orig/sm/sonic-sairedis/vslib/src/sai_vs_switch.cpp
++++ usonic/sm/sonic-sairedis/vslib/src/sai_vs_switch.cpp
+@@ -92,7 +92,7 @@ class LinkMsg : public swss::NetMsg
+             unsigned int    if_flags = rtnl_link_get_flags(link); // IFF_LOWER_UP and IFF_RUNNING
+             const char*     if_name  = rtnl_link_get_name(link);
+ 
+-            if (strncmp(if_name, SAI_VS_VETH_PREFIX, sizeof(SAI_VS_VETH_PREFIX) - 1) != 0 &&
++            if (strncmp(if_name, "Ethernet", sizeof("Ethernet") - 1) != 0 &&
+                     g_ifname_to_lanes.find(if_name) == g_ifname_to_lanes.end())
+             {
+                 SWSS_LOG_INFO("skipping newlink for %s", if_name);

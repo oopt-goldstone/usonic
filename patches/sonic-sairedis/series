@@ -1,2 +1,3 @@
 vslib.patch
 update-meta-files-for-new-gcc-perl.patch
+vslib:_remove_'v'_prefix_from_the_hostif.patch
