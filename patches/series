@@ -1,2 +1,4 @@
+sonic-sairedis/vslib:_remove_'v'_prefix_from_the_hostif.patch
+sonic-py-swsssdk/swsssdk:_make_the_default_db_host_configurable.patch
+sonic-utilities/support_changing_default_db_host.patch
 sonic-swss/swssconfig:_use_unix_domain_socket.patch
-sonic-swss/[portsyncd]:_fix_portsyncd_restart_case_(#1019).patch

@@ -1,0 +1,499 @@
+Index: usonic/sm/sonic-utilities/config/main.py
+===================================================================
+--- usonic.orig/sm/sonic-utilities/config/main.py
++++ usonic/sm/sonic-utilities/config/main.py
+@@ -17,6 +17,9 @@ from minigraph import parse_device_desc_
+ import aaa
+ import mlnx
+ 
++import os
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
++
+ SONIC_CFGGEN_PATH = '/usr/local/bin/sonic-cfggen'
+ SYSLOG_IDENTIFIER = "config"
+ 
+@@ -616,7 +619,7 @@ def warm_restart(ctx, redis_unix_socket_
+     config_db.connect(wait_for_init=False)
+ 
+     # warm restart enable/disable config is put in stateDB, not persistent across cold reboot, not saved to config_DB.json file
+-    state_db = SonicV2Connector(host='127.0.0.1')
++    state_db = SonicV2Connector(host=DEFAULT_DB_HOST)
+     state_db.connect(state_db.STATE_DB, False)
+     TABLE_NAME_SEPARATOR = '|'
+     prefix = 'WARM_RESTART_ENABLE_TABLE' + TABLE_NAME_SEPARATOR
+Index: usonic/sm/sonic-utilities/crm/main.py
+===================================================================
+--- usonic.orig/sm/sonic-utilities/crm/main.py
++++ usonic/sm/sonic-utilities/crm/main.py
+@@ -6,6 +6,8 @@ import swsssdk
+ from tabulate import tabulate
+ from subprocess import Popen, PIPE
+ 
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
++
+ class Crm:
+     def __init__(self):
+         self.cli_mode = None
+@@ -66,7 +68,7 @@ class Crm:
+         """
+         CRM Handler to display resources information.
+         """
+-        countersdb = swsssdk.SonicV2Connector(host='127.0.0.1')
++        countersdb = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+         countersdb.connect(countersdb.COUNTERS_DB)
+ 
+         crm_stats = countersdb.get_all(countersdb.COUNTERS_DB, 'CRM:STATS')
+@@ -92,7 +94,7 @@ class Crm:
+         """
+         CRM Handler to display ACL recources information.
+         """
+-        countersdb = swsssdk.SonicV2Connector(host='127.0.0.1')
++        countersdb = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+         countersdb.connect(countersdb.COUNTERS_DB)
+ 
+         header = ("Stage", "Bind Point", "Resource Name", "Used Count", "Available Count")
+@@ -118,7 +120,7 @@ class Crm:
+         """
+         CRM Handler to display ACL table information.
+         """
+-        countersdb = swsssdk.SonicV2Connector(host='127.0.0.1')
++        countersdb = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+         countersdb.connect(countersdb.COUNTERS_DB)
+ 
+         header = ("Table ID", "Resource Name", "Used Count", "Available Count")
+Index: usonic/sm/sonic-utilities/pfcwd/main.py
+===================================================================
+--- usonic.orig/sm/sonic-utilities/pfcwd/main.py
++++ usonic/sm/sonic-utilities/pfcwd/main.py
+@@ -6,6 +6,8 @@ import os
+ from tabulate import tabulate
+ from natsort import natsorted
+ 
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
++
+ # Default configuration
+ DEFAULT_DETECTION_TIME = 200
+ DEFAULT_RESTORATION_TIME = 200
+@@ -67,7 +69,7 @@ def show():
+ @click.argument('queues', nargs = -1)
+ def stats(empty, queues):
+     """ Show PFC Watchdog stats per queue """
+-    db = swsssdk.SonicV2Connector(host='127.0.0.1')
++    db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+     db.connect(db.COUNTERS_DB)
+     table = []
+ 
+@@ -95,7 +97,7 @@ def config(ports):
+     """ Show PFC Watchdog configuration """
+     configdb = swsssdk.ConfigDBConnector()
+     configdb.connect()
+-    countersdb = swsssdk.SonicV2Connector(host='127.0.0.1')
++    countersdb = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+     countersdb.connect(countersdb.COUNTERS_DB)
+     table = []
+ 
+@@ -143,7 +145,7 @@ def start(action, restoration_time, port
+     allowed_strs = ['ports', 'all', 'detection-time']
+     configdb = swsssdk.ConfigDBConnector()
+     configdb.connect()
+-    countersdb = swsssdk.SonicV2Connector(host='127.0.0.1')
++    countersdb = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+     countersdb.connect(countersdb.COUNTERS_DB)
+ 
+     all_ports = get_all_ports(countersdb)
+@@ -201,7 +203,7 @@ def stop(ports):
+         exit("Root privileges are required for this operation")
+     configdb = swsssdk.ConfigDBConnector()
+     configdb.connect()
+-    countersdb = swsssdk.SonicV2Connector(host='127.0.0.1')
++    countersdb = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+     countersdb.connect(countersdb.COUNTERS_DB)
+ 
+     all_ports = get_all_ports(countersdb)
+Index: usonic/sm/sonic-utilities/scripts/aclshow
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/aclshow
++++ usonic/sm/sonic-utilities/scripts/aclshow
+@@ -29,6 +29,8 @@ import sys
+ from tabulate import tabulate
+ from natsort import natsorted
+ 
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
++
+ ### temp file to save counter positions when doing clear counter action.
+ ### if we could have a SAI command to clear counters will be better, so no need to maintain
+ ### counters in temp loaction for clear conter action
+@@ -64,7 +66,7 @@ class AclStat(object):
+             self.table_list = tables.split(",")
+ 
+         # Set up db connections
+-        self.db = swsssdk.SonicV2Connector(host="127.0.0.1")
++        self.db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+         self.db.connect(self.db.COUNTERS_DB)
+ 
+         self.configdb = swsssdk.ConfigDBConnector()
+Index: usonic/sm/sonic-utilities/scripts/ecnconfig
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/ecnconfig
++++ usonic/sm/sonic-utilities/scripts/ecnconfig
+@@ -55,6 +55,8 @@ import argparse
+ import swsssdk
+ from tabulate import tabulate
+ 
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
++
+ WRED_PROFILE_TABLE_NAME = "WRED_PROFILE"
+ WRED_CONFIG_FIELDS = {
+     "gmax": "green_max_threshold",
+@@ -144,7 +146,7 @@ class EcnQ(object):
+         self.config_db = swsssdk.ConfigDBConnector()
+         self.config_db.connect()
+ 
+-        self.db = swsssdk.SonicV2Connector(host="127.0.0.1")
++        self.db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+         self.db.connect(self.db.CONFIG_DB)
+ 
+         self.gen_ports_key()
+Index: usonic/sm/sonic-utilities/scripts/fast-reboot-dump.py
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/fast-reboot-dump.py
++++ usonic/sm/sonic-utilities/scripts/fast-reboot-dump.py
+@@ -12,12 +12,13 @@ import argparse
+ import syslog
+ import traceback
+ 
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
+ 
+ ARP_CHUNK = binascii.unhexlify('08060001080006040001') # defines a part of the packet for ARP Request
+ ARP_PAD = binascii.unhexlify('00' * 18)
+ 
+ def generate_arp_entries(filename, all_available_macs):
+-    db = swsssdk.SonicV2Connector(host='127.0.0.1')
++    db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+     db.connect(db.APPL_DB, False)   # Make one attempt only
+ 
+     arp_output = []
+@@ -150,7 +151,7 @@ def get_fdb(db, vlan_name, vlan_id, brid
+ def generate_fdb_entries(filename):
+     fdb_entries = []
+ 
+-    db = swsssdk.SonicV2Connector(host='127.0.0.1')
++    db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+     db.connect(db.ASIC_DB, False)   # Make one attempt only
+ 
+     bridge_id_2_iface = get_map_bridge_port_id_2_iface_name(db)
+@@ -243,7 +244,7 @@ def get_default_entries(db, route):
+     return obj
+ 
+ def generate_default_route_entries(filename):
+-    db = swsssdk.SonicV2Connector(host='127.0.0.1')
++    db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+     db.connect(db.APPL_DB, False)   # Make one attempt only
+ 
+     default_routes_output = []
+Index: usonic/sm/sonic-utilities/scripts/fdbclear
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/fdbclear
++++ usonic/sm/sonic-utilities/scripts/fdbclear
+@@ -19,12 +19,16 @@ from natsort import natsorted
+ from swsssdk import SonicV2Connector, port_util
+ from tabulate import tabulate
+ 
++import os
++
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
++
+ class FdbClear(object):
+ 
+ 
+     def __init__(self):
+         super(FdbClear,self).__init__()
+-        self.db = SonicV2Connector(host="127.0.0.1")
++        self.db = SonicV2Connector(host=DEFAULT_DB_HOST)
+         self.db.connect(self.db.APPL_DB)
+         return
+ 
+Index: usonic/sm/sonic-utilities/scripts/fdbshow
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/fdbshow
++++ usonic/sm/sonic-utilities/scripts/fdbshow
+@@ -33,6 +33,10 @@ from natsort import natsorted
+ from swsssdk import SonicV2Connector, port_util
+ from tabulate import tabulate
+ 
++import os
++
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
++
+ class FdbShow(object):
+ 
+     HEADER = ['No.', 'Vlan', 'MacAddress', 'Port', 'Type']
+@@ -40,7 +44,7 @@ class FdbShow(object):
+ 
+     def __init__(self):
+         super(FdbShow,self).__init__()
+-        self.db = SonicV2Connector(host="127.0.0.1")
++        self.db = SonicV2Connector(host=DEFAULT_DB_HOST)
+         self.if_name_map, \
+         self.if_oid_map = port_util.get_interface_oid_map(self.db)
+         self.if_br_oid_map = port_util.get_bridge_port_map(self.db)
+Index: usonic/sm/sonic-utilities/scripts/intfstat
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/intfstat
++++ usonic/sm/sonic-utilities/scripts/intfstat
+@@ -19,6 +19,8 @@ import swsssdk
+ import sys
+ import time
+ 
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
++
+ # mock the redis for unit test purposes #
+ try:
+     if os.environ["UTILITIES_UNIT_TESTING"] == "1":
+@@ -68,7 +70,7 @@ INTF_STATE_DISABLED = 'X'
+ 
+ class Intfstat(object):
+     def __init__(self):
+-        self.db = swsssdk.SonicV2Connector(host='127.0.0.1')
++        self.db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+         self.db.connect(self.db.COUNTERS_DB)
+         self.db.connect(self.db.APPL_DB)
+ 
+Index: usonic/sm/sonic-utilities/scripts/intfutil
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/intfutil
++++ usonic/sm/sonic-utilities/scripts/intfutil
+@@ -9,6 +9,8 @@ from natsort import natsorted
+ from swsssdk import ConfigDBConnector
+ from pprint import pprint
+ 
++import os
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
+ 
+ # ========================== Common interface-utils logic ==========================
+ 
+@@ -73,7 +75,7 @@ def config_db_vlan_port_keys_get(int_to_
+ 
+ 
+ def db_connect_appl():
+-    appl_db = swsssdk.SonicV2Connector(host='127.0.0.1')
++    appl_db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+     if appl_db is None:
+         return None
+     appl_db.connect(appl_db.APPL_DB)
+@@ -110,7 +112,7 @@ def db_connect_state():
+     """
+     Connect to REDIS STATE DB and get optics info
+     """
+-    state_db = swsssdk.SonicV2Connector(host='127.0.0.1')
++    state_db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+     if state_db is None:
+         return None
+     state_db.connect(state_db.STATE_DB, False)   # Make one attempt only
+Index: usonic/sm/sonic-utilities/scripts/nbrshow
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/nbrshow
++++ usonic/sm/sonic-utilities/scripts/nbrshow
+@@ -30,6 +30,9 @@ import json
+ import sys
+ import subprocess
+ import re
++import os
++
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
+ 
+ from natsort import natsorted
+ from swsssdk import SonicV2Connector, port_util
+@@ -47,7 +50,7 @@ class NbrBase(object):
+ 
+     def __init__(self, cmd):
+         super(NbrBase, self).__init__()
+-        self.db = SonicV2Connector(host="127.0.0.1")
++        self.db = SonicV2Connector(host=DEFAULT_DB_HOST)
+         self.if_name_map, self.if_oid_map = port_util.get_interface_oid_map(self.db)
+         self.if_br_oid_map = port_util.get_bridge_port_map(self.db)
+         self.fetch_fdb_data()
+Index: usonic/sm/sonic-utilities/scripts/pfcstat
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/pfcstat
++++ usonic/sm/sonic-utilities/scripts/pfcstat
+@@ -15,11 +15,13 @@ import getopt
+ import json
+ import os.path
+ import time
++import os
+ 
+ from collections import namedtuple, OrderedDict
+ from natsort import natsorted
+ from tabulate import tabulate
+ 
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
+ 
+ PStats = namedtuple("PStats", "pfc0, pfc1, pfc2, pfc3, pfc4, pfc5, pfc6, pfc7")
+ header_Rx = ['Port Rx', 'PFC0', 'PFC1', 'PFC2', 'PFC3', 'PFC4', 'PFC5', 'PFC6', 'PFC7']
+@@ -55,7 +57,7 @@ COUNTERS_PORT_NAME_MAP = "COUNTERS_PORT_
+ 
+ class Pfcstat(object):
+     def __init__(self):
+-        self.db = swsssdk.SonicV2Connector(host='127.0.0.1')
++        self.db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+         self.db.connect(self.db.COUNTERS_DB)
+ 
+     def get_cnstat(self, rx):
+Index: usonic/sm/sonic-utilities/scripts/portstat
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/portstat
++++ usonic/sm/sonic-utilities/scripts/portstat
+@@ -16,6 +16,7 @@ import subprocess
+ import swsssdk
+ import sys
+ import time
++import os
+ 
+ from collections import namedtuple, OrderedDict
+ from natsort import natsorted
+@@ -23,6 +24,8 @@ from tabulate import tabulate
+ from utilities_common.netstat import ns_diff, ns_brate, ns_prate, ns_util, table_as_json
+ from utilities_common import get_uptime
+ 
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
++
+ PORT_RATE = 40
+ 
+ NStats = namedtuple("NStats", "rx_ok, rx_err, rx_drop, rx_ovr, tx_ok,\
+@@ -66,7 +69,7 @@ PORT_STATE_DISABLED = 'X'
+ 
+ class Portstat(object):
+     def __init__(self):
+-        self.db = swsssdk.SonicV2Connector(host='127.0.0.1')
++        self.db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+         self.db.connect(self.db.COUNTERS_DB)
+         self.db.connect(self.db.APPL_DB)
+ 
+Index: usonic/sm/sonic-utilities/scripts/psushow
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/psushow
++++ usonic/sm/sonic-utilities/scripts/psushow
+@@ -6,6 +6,8 @@ import os
+ from swsssdk import SonicV2Connector
+ from tabulate import tabulate
+ 
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
++
+ # mock the redis for unit test purposes #
+ try:
+     if os.environ["UTILITIES_UNIT_TESTING"] == "1":
+@@ -18,7 +20,7 @@ except KeyError:
+     pass
+ 
+ def psu_status_show(index):
+-    db = SonicV2Connector(host="127.0.0.1")
++    db = SonicV2Connector(host=DEFAULT_DB_HOST)
+     db.connect(db.STATE_DB)
+ 
+     # Currently set chassis_num to 1, need to improve it once new platform API is implemented
+Index: usonic/sm/sonic-utilities/scripts/queuestat
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/queuestat
++++ usonic/sm/sonic-utilities/scripts/queuestat
+@@ -14,11 +14,13 @@ import json
+ import os.path
+ import swsssdk
+ import sys
++import os
+ 
+ from collections import namedtuple, OrderedDict
+ from natsort import natsorted
+ from tabulate import tabulate
+ 
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
+ 
+ QueueStats = namedtuple("QueueStats", "queueindex, queuetype, totalpacket, totalbytes, droppacket, dropbytes")
+ header = ['Port', 'TxQ', 'Counter/pkts', 'Counter/bytes', 'Drop/pkts', 'Drop/bytes']
+@@ -52,7 +54,7 @@ cnstat_fqn_file = 'N/A'
+ 
+ class Queuestat(object):
+     def __init__(self):
+-        self.db = swsssdk.SonicV2Connector(host='127.0.0.1')
++        self.db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+         self.db.connect(self.db.COUNTERS_DB)
+ 
+         def get_queue_port(table_id):
+Index: usonic/sm/sonic-utilities/scripts/sfpshow
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/sfpshow
++++ usonic/sm/sonic-utilities/scripts/sfpshow
+@@ -15,6 +15,8 @@ from natsort import natsorted
+ from swsssdk import SonicV2Connector, port_util
+ from tabulate import tabulate
+ 
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
++
+ # Mock the redis for unit test purposes #
+ try:
+     if os.environ["UTILITIES_UNIT_TESTING"] == "1":
+@@ -63,10 +65,10 @@ class SFPShow(object):
+ 
+     def __init__(self):
+         super(SFPShow,self).__init__()
+-        self.adb = SonicV2Connector(host="127.0.0.1")
++        self.adb = SonicV2Connector(host=DEFAULT_DB_HOST)
+         self.adb.connect(self.adb.APPL_DB)
+ 
+-        self.sdb = SonicV2Connector(host="127.0.0.1")
++        self.sdb = SonicV2Connector(host=DEFAULT_DB_HOST)
+         self.sdb.connect(self.sdb.STATE_DB)
+         return
+ 
+Index: usonic/sm/sonic-utilities/scripts/teamshow
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/teamshow
++++ usonic/sm/sonic-utilities/scripts/teamshow
+@@ -30,6 +30,8 @@ from natsort import natsorted
+ from sonic_device_util import get_machine_info
+ from sonic_device_util import get_platform_info
+ 
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
++
+ PORT_CHANNEL_APPL_TABLE_PREFIX = "LAG_TABLE:"
+ PORT_CHANNEL_CFG_TABLE_PREFIX = "PORTCHANNEL|"
+ PORT_CHANNEL_STATUS_FIELD = "oper_status"
+@@ -44,7 +46,7 @@ class Teamshow(object):
+         self.summary = {}
+         self.err = None
+         # setup db connection
+-        self.db = swsssdk.SonicV2Connector(host="127.0.0.1")
++        self.db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+         self.db.connect(self.db.APPL_DB)
+         self.db.connect(self.db.CONFIG_DB)
+ 
+Index: usonic/sm/sonic-utilities/scripts/watermarkstat
+===================================================================
+--- usonic.orig/sm/sonic-utilities/scripts/watermarkstat
++++ usonic/sm/sonic-utilities/scripts/watermarkstat
+@@ -11,9 +11,11 @@ import getopt
+ import json
+ import sys
+ import swsssdk
++import os
+ from natsort import natsorted
+ from tabulate import tabulate
+ 
++DEFAULT_DB_HOST = os.getenv('DEFAULT_DB_HOST', '127.0.0.1')
+ 
+ headerPg = ['Port', 'PG0', 'PG1', 'PG2', 'PG3', 'PG4', 'PG5', 'PG6', 'PG7']
+ headerUc = ['Port', 'UC0', 'UC1', 'UC2', 'UC3', 'UC4', 'UC5', 'UC6', 'UC7']
+@@ -48,11 +50,11 @@ COUNTERS_PG_INDEX_MAP = "COUNTERS_PG_IND
+ class Watermarkstat(object):
+ 
+     def __init__(self):
+-        self.counters_db = swsssdk.SonicV2Connector(host='127.0.0.1')
++        self.counters_db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+         self.counters_db.connect(self.counters_db.COUNTERS_DB)
+         
+         # connect APP DB for clear notifications
+-        self.app_db = swsssdk.SonicV2Connector(host='127.0.0.1')
++        self.app_db = swsssdk.SonicV2Connector(host=DEFAULT_DB_HOST)
+         self.app_db.connect(self.counters_db.APPL_DB)
+ 
+         def get_queue_type(table_id):

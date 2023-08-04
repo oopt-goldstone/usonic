@@ -56,7 +56,12 @@ FROM debian:buster AS lldpd
 RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt,sharing=locked  \
 apt update && apt install -qy make g++ graphviz autotools-dev autoconf doxygen stgit libnl-genl-3-dev libnl-nf-3-dev libhiredis-dev perl libxml-simple-perl aspell swig libgtest-dev dh-exec debhelper libtool python3-all python-all libpython3-dev libpython-dev quilt patchelf libboost-dev libbsd-dev pkg-config check libsnmp-dev libpci-dev libxml2-dev libevent-dev libreadline-dev libcap-dev libjansson-dev dh-systemd python3 python python-pip wget
 
-RUN --mount=type=bind,source=sm/sonic-py-swsssdk,target=/src,rw pip install /src
+RUN --mount=type=bind,source=sm/sonic-py-swsssdk,target=/root/sm/sonic-py-swsssdk,rw \
+    --mount=type=bind,source=patches/sonic-py-swsssdk,target=/root/patches \
+    --mount=type=tmpfs,target=/root/.pc,rw \
+    cd /root && quilt upgrade && quilt push -a && \
+    pip install /root/sm/sonic-py-swsssdk
+
 # TODO refactoring
 RUN --mount=type=bind,target=/root,rw \
     cd /root/sm/sonic-dbsyncd && \
@@ -74,7 +79,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
 RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt,sharing=locked  \
 apt update && apt install -qy make g++ graphviz autotools-dev autoconf doxygen stgit libnl-genl-3-dev libnl-nf-3-dev libhiredis-dev perl libxml-simple-perl aspell swig libgtest-dev dh-exec debhelper libtool python3-all python-all libpython3-dev libpython-dev quilt patchelf libboost-dev libc-ares-dev libsnmp-dev libjson-c3 libjson-c-dev libsystemd-dev python-ipaddr libcmocka-dev python3-all-dev python3-all-dbg install-info logrotate bison chrpath flex gawk libcap-dev libpam0g-dev libpam-dev libpcre3-dev libreadline-dev libyang-dev pkg-config python3-sphinx python3-pytest texinfo
 
-RUN --mount=type=bind,target=/root,rw cd /root && quilt push -a && make -C /root/make/sonic-frr
+RUN --mount=type=bind,source=make/sonic-frr,target=/root/make/sonic-frr,rw \
+    --mount=type=bind,source=sm/sonic-frr,target=/root/sm/sonic-frr,rw \
+    --mount=type=bind,source=.git,target=/root/.git,rw \
+    make -C /root/make/sonic-frr
 
 FROM debian:buster AS run
 
@@ -112,11 +120,16 @@ RUN rm -f /var/run/teamd/* && \
 RUN rm -f /var/run/lldpd.socket 
 
 RUN --mount=type=cache,target=/var/cache/apt --mount=type=cache,target=/var/lib/apt,sharing=locked  \
-apt update && apt-get install -qy -y --no-install-recommends apt-utils libpython-dev strace vim gdb procps redis-server syslog-ng tcpdump libdaemon-dev libdbus-1-dev libjansson-dev libnl-3-dev libnl-cli-3-dev libnl-genl-3-dev libnl-route-3-dev pkg-config debhelper libdbus-1-3 libdaemon0 libjansson4 libc-ares2 iproute2 libpython2.7 libjson-c3 logrotate libunwind8 python3 python python-pip libbsd-dev check libsnmp-dev libpci-dev libxml2-dev libevent-dev libreadline-dev libcap-dev build-essential git
+apt update && apt-get install -qy -y --no-install-recommends apt-utils libpython-dev strace vim gdb procps redis-server syslog-ng tcpdump libdaemon-dev libdbus-1-dev libjansson-dev libnl-3-dev libnl-cli-3-dev libnl-genl-3-dev libnl-route-3-dev pkg-config debhelper libdbus-1-3 libdaemon0 libjansson4 libc-ares2 iproute2 libpython2.7 libjson-c3 logrotate libunwind8 python3 python python-pip libbsd-dev check libsnmp-dev libpci-dev libxml2-dev libevent-dev libreadline-dev libcap-dev build-essential git quilt
 
 ADD src/lldpd/lldpmgrd /usr/bin/
 RUN pip install setuptools
-RUN --mount=type=bind,source=sm/sonic-py-swsssdk,target=/src,rw pip install /src
+RUN --mount=type=bind,source=sm/sonic-py-swsssdk,target=/root/sm/sonic-py-swsssdk,rw \
+    --mount=type=bind,source=patches/sonic-py-swsssdk,target=/root/patches \
+    --mount=type=tmpfs,target=/root/.pc,rw \
+    cd /root && quilt upgrade && quilt push -a && \
+    pip install /root/sm/sonic-py-swsssdk
+
 # TODO refactoring
 RUN --mount=type=bind,target=/root,rw \
     cd /root/sm/sonic-dbsyncd && \
