@@ -36,7 +36,13 @@ jobs:
             username: ${{ secrets.GHCR_USER }}
             password: ${{ secrets.GITHUB_TOKEN }}
         - name: install k3s
-          run: curl -sfL https://get.k3s.io | sh -s - --docker
+          run: curl -sfL https://get.k3s.io | sh -
+        - name: chmod k3s
+          run: sudo chmod 644 /etc/rancher/k3s/k3s.yaml
+        - name: Set up Homebrew
+          uses: Homebrew/actions/setup-homebrew@master
+        - name: install stern
+          run: brew install stern
         - uses: actions/checkout@v3
         - run: git submodule update --init --recursive sm/sonic-py-swsssdk sm/sonic-sairedis sm/sonic-swss sm/sonic-swss-common sm/sonic-utilities sm/sonic-frr sm/sonic-dbsyncd
         - run: git submodule update --init sm/sonic-buildimage
@@ -100,9 +106,13 @@ jobs:
               $K get pods || true
               ($K exec usonic-cli -- show interface status | grep Ethernet1) && exit 0 || true
             done
+          timeout-minutes: 10
         - run: |
             $K exec usonic-cli -- show interface status
             $K exec usonic-cli -- config vlan add 1000
             $K exec usonic-cli -- config vlan member add 1000 Ethernet1 -u
             $K exec usonic-cli -- config vlan member add 1000 Ethernet2 -u
             $K exec usonic-cli -- show vlan brief
+        - name: show log
+          run: stern --kubeconfig /etc/rancher/k3s/k3s.yaml -t --no-follow usonic
+          if: always()
